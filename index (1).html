@@ -1,0 +1,238 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>J.A.R.V.I.S.</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050816;--g:rgba(255,255,255,.045);--l:rgba(255,255,255,.1);--c:#5ee7ff;--b:#5b8cff;--v:#a78bfa;--k:#f472b6;--t:#eaf1ff;--m:#8a99b8;--r:22px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--t);font:15px/1.55 Outfit,system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+body:before{content:"";position:fixed;inset:-20%;z-index:-1;background:radial-gradient(40% 40% at 25% 20%,rgba(91,140,255,.28),transparent),radial-gradient(35% 35% at 80% 30%,rgba(167,139,250,.22),transparent),radial-gradient(40% 40% at 60% 90%,rgba(94,231,255,.14),transparent);animation:drift 22s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(4%,3%) scale(1.08)}}
+header{display:flex;align-items:center;gap:14px;padding:12px 18px}
+header b{font-weight:600;font-size:18px;letter-spacing:.14em;background:linear-gradient(90deg,var(--c),var(--v));-webkit-background-clip:text;background-clip:text;color:transparent}
+#status{margin-left:auto;color:var(--m);font-size:13px;padding:6px 14px;border:1px solid var(--l);border-radius:99px;background:var(--g)}
+#orb{width:14px;height:14px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c);transition:.4s}
+#orb.listening{animation:pulse 1.3s infinite}#orb.thinking{background:var(--v);box-shadow:0 0 14px var(--v);animation:blink .8s infinite alternate}
+#orb.speaking{background:var(--k);box-shadow:0 0 14px var(--k);animation:wave .45s infinite alternate}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(94,231,255,.7)}100%{box-shadow:0 0 0 14px rgba(94,231,255,0)}}@keyframes blink{to{opacity:.3}}@keyframes wave{to{transform:scale(1.5)}}
+button,select,input,textarea{font:inherit;color:var(--t);background:var(--g);border:1px solid var(--l);border-radius:14px;padding:10px 16px;min-height:44px;outline:0;transition:.2s}
+input:focus,textarea:focus,select:focus{border-color:var(--c);box-shadow:0 0 0 3px rgba(94,231,255,.15)}
+button{cursor:pointer}button:hover{background:rgba(255,255,255,.09)}button:active{transform:scale(.96)}
+button.pri{background:linear-gradient(135deg,rgba(94,231,255,.9),rgba(167,139,250,.9));color:#06101f;border:0;font-weight:600}
+.wrap{flex:1;display:flex;min-height:0;position:relative}
+nav{display:flex;flex-direction:column;gap:4px;padding:8px 12px;width:200px;transition:.3s;overflow:hidden}
+nav.hide{width:0;padding:0;opacity:0}nav button{text-align:left;border-color:transparent;background:transparent;color:var(--m)}nav button.on{background:var(--g);border-color:var(--l);color:var(--t)}
+main{flex:1;display:grid;gap:14px;padding:6px 14px 14px;min-width:0;min-height:0;overflow:auto;grid-template-columns:1.15fr 1fr;align-content:start}
+@media(max-width:900px),(orientation:portrait){main{grid-template-columns:1fr}nav{position:absolute;z-index:5;top:0;bottom:0;background:rgba(5,8,22,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid var(--l)}}
+section{background:var(--g);border:1px solid var(--l);border-radius:var(--r);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);padding:16px;display:flex;flex-direction:column;gap:12px;min-height:0;animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+section:nth-of-type(2){animation-delay:.08s}section:nth-of-type(3){animation-delay:.16s}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.985)}}
+section>h2{margin:0;font-size:15px;font-weight:500;color:var(--m)}
+body:not([data-view=home]) main{grid-template-columns:1fr}
+section:not([data-v~="home"]){display:none}
+body[data-view=globe] #globe,body[data-view=gesture] #cam,body[data-view=chat] #chat,body[data-view=voice] #chat,body[data-view=live] #chat,body[data-view=history] #hist,body[data-view=settings] #set,body[data-view=gesture] #globe,body[data-view=globe] #cam{display:flex}
+#glbox{position:relative;height:min(58vh,520px);min-height:300px;border-radius:16px;background:radial-gradient(circle at 50% 50%,rgba(91,140,255,.12),transparent 65%)}#gl{width:100%;height:100%;display:block;touch-action:none}
+#glfb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--m)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#msgs{flex:1;overflow:auto;min-height:220px;max-height:52vh;display:flex;flex-direction:column;gap:10px;padding-right:4px}
+.m{padding:11px 15px;border-radius:18px;max-width:90%;white-space:pre-wrap;word-wrap:break-word;animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}}
+.m.user{align-self:flex-end;background:linear-gradient(135deg,rgba(91,140,255,.35),rgba(167,139,250,.3));border-bottom-right-radius:6px}
+.m.ai{background:var(--g);border:1px solid var(--l);border-bottom-left-radius:6px}.m.err{background:rgba(244,114,182,.12);border:1px solid var(--k);color:#ffd1e8}
+.m small{display:block;color:var(--m);font-size:11px;margin-top:4px}.m a{color:var(--c)}.m button{min-height:32px;padding:4px 12px;margin-top:6px;font-size:13px}
+#in{flex:1;min-width:120px;border-radius:99px}
+#mic{width:68px;height:68px;border-radius:50%;font-size:26px;padding:0;position:relative}
+#mic:after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--c);opacity:0}
+body[data-st=listening] #mic:after{animation:ring 1.4s infinite}@keyframes ring{from{opacity:.9;transform:scale(1)}to{opacity:0;transform:scale(1.7)}}
+#vw{position:relative;width:100%;max-width:420px;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#000;border:1px solid var(--l)}
+#vw video,#vw canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);object-fit:cover}
+#info{color:var(--m)}label{display:flex;flex-direction:column;gap:6px;color:var(--m);font-size:13px}label.ck{flex-direction:row;align-items:center;gap:10px}label.ck input{min-height:0;width:20px;height:20px}
+#set{gap:14px}textarea{min-height:90px}.note{color:var(--m);font-size:12px;white-space:pre-wrap}input[type=range]{padding:0}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(12,20,44,.95);border:1px solid var(--c);padding:12px 18px;border-radius:16px;display:none;max-width:90%;z-index:9;animation:pop .3s}
+@media(prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}}
+</style></head><body data-view="home">
+<header><button id="nb" aria-label="Menu">☰</button><b>J.A.R.V.I.S.</b><i id="orb"></i><span id="status">Idle</span></header>
+<div class="wrap"><nav id="nav" class="hide"></nav><main>
+<section id="globe" data-v="home"><h2>Holographic Earth</h2>
+<div id="glbox"><canvas id="gl"></canvas><div id="glfb" hidden>3D rendering is unavailable (WebGL or Three.js failed to load). Chat, voice and search still work.</div></div>
+<div class="row"><button id="gp">Pause rotation</button><button id="gv">Reset camera view</button><button id="go">Default orientation</button><button id="gz1">＋</button><button id="gz2">－</button></div>
+<div id="info">Tap a marker to select a location.</div></section>
+<section id="chat" data-v="home"><h2>Conversation</h2><div id="msgs"></div>
+<div class="row"><button id="mic" class="pri" aria-label="Microphone">🎙</button><button id="stop">Stop</button><input id="in" placeholder="Type a message (fallback to voice)"><button id="send" class="pri">Send</button>
+<label class="ck"><input type="checkbox" id="live" style="min-height:0"> Live info</label><button id="newc">New</button></div></section>
+<section id="cam" data-v="home"><h2>Gesture control</h2>
+<div id="vw"><video id="v" playsinline muted></video><canvas id="ov"></canvas></div>
+<div class="row"><button id="cb" class="pri">Enable camera</button><button id="cx">Disable camera</button><button id="cc">Recalibrate</button></div>
+<label>Sensitivity <input type="range" id="sens" min="0.5" max="2" step="0.1" value="1"></label>
+<div id="gs" class="note">Camera off. Palm: pause/resume · Point: rotate · Pinch (thumb+index): zoom · Fist: reset · Two fingers: next panel.</div></section>
+<section id="hist" data-v="home" style="display:none"><h2>History</h2><div id="hl"></div><button id="clr">Clear all stored data</button></section>
+<section id="set" data-v="home" style="display:none"><h2>Settings</h2>
+<label>Provider <select id="pv"><option value="">Auto-detect</option><option value="anthropic">Anthropic</option><option value="openrouter">OpenRouter</option><option value="custom">Custom (OpenAI-compatible)</option></select></label>
+<label>Custom base URL (only for Custom, e.g. https://api.openai.com/v1) <input id="cu"></label>
+<label>API key <input id="key" type="password" autocomplete="off"></label>
+<label class="ck"><input type="checkbox" id="pk" style="min-height:0">&nbsp;Save key on this device (browser storage is not secure)</label>
+<label>Backend URL (optional, recommended; handles key + search) <input id="be" placeholder="https://your-app.example.com"></label>
+<label>Model <input id="model"></label>
+<label>Verbosity <select id="len"><option value="concise">Concise</option><option value="balanced">Balanced</option><option value="detailed">Detailed</option></select></label>
+<label>Personality / system instructions <textarea id="sys"></textarea></label>
+<label>Voice <select id="vo"></select></label><label>Speech rate <input type="range" id="rate" min="0.7" max="1.5" step="0.1" value="1"></label>
+<label class="ck"><input type="checkbox" id="sp" checked style="min-height:0">&nbsp;Speak responses</label>
+<label class="ck"><input type="checkbox" id="ph" style="min-height:0">&nbsp;Save chat history on this device</label>
+<div class="row"><button id="ss" class="pri">Save settings</button><button id="tv">Test voice</button><button id="tm">Enable microphone</button></div>
+<div class="note">Stored locally only if you tick the boxes above (settings except key are kept in this browser). Your messages go to the AI provider (and search provider for live questions) — via your backend if set. "Clear all stored data" erases everything saved here.</div>
+<h2>Diagnostics</h2><pre id="diag" class="note"></pre></section>
+</main></div><div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),DEF="You are JARVIS, an intelligent, composed, helpful personal AI assistant. Speak naturally and professionally, understand conversational context, explain technical subjects clearly, and provide useful answers. Be concise by default, but give detailed explanations when requested. Never claim to have performed an action that you have not actually performed. Never claim access to sensors, devices, accounts, or private information unless the relevant capability is genuinely connected and permission has been granted.";
+/* PRIVATE USE ONLY: you may type a key here, but NEVER upload a file containing a key to a public repo. provider: 'anthropic' | 'openrouter' | 'custom' */
+const CONFIG={provider:'',key:'',model:''};
+const S=Object.assign({pv:CONFIG.provider,cu:'',key:CONFIG.key,model:CONFIG.model||'claude-sonnet-5-5',backend:'',sys:DEF,len:'concise',voice:'',rate:1,speak:true,ph:false,pk:false,sens:1},JSON.parse(localStorage.jv_s||'{}'));
+const toast=t=>{const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',5000)};
+// ---------- state / nav ----------
+let state='idle';const setState=s=>{state=s;document.body.dataset.st=s;$('#orb').className=s;$('#status').textContent={idle:'Idle',listening:'Listening…',thinking:'Processing…',speaking:'Speaking…'}[s]};
+const VIEWS=[['home','Home'],['chat','AI Chat'],['voice','Voice Assistant'],['globe','Holographic Globe'],['gesture','Gesture Controls'],['live','Live Information'],['history','History'],['settings','Settings']];
+VIEWS.forEach(([v,n])=>{const b=document.createElement('button');b.textContent=n;b.dataset.v=v;b.onclick=()=>go(v);$('#nav').append(b)});
+function go(v){document.body.dataset.view=v;if(v=='live')$('#live').checked=true;if(v=='history')renderHist();
+ document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==v));
+ $('#hist').style.display=v=='history'?'flex':'none';$('#set').style.display=v=='settings'?'flex':'none';if(v=='settings')diag();
+ if(innerWidth<900)$('#nav').classList.add('hide');setTimeout(resize,50)}
+$('#nb').onclick=()=>$('#nav').classList.toggle('hide');
+// ---------- chat ----------
+let msgs=[],busy=false,ctl=null;
+const add=(role,text,extra={})=>{const m={role,text,t:Date.now(),...extra};msgs.push(m);draw(m);persist();return m};
+function draw(m){const d=document.createElement('div');d.className='m '+(m.role=='user'?'user':m.role=='err'?'err':'ai');d.textContent=m.text;
+ const s=document.createElement('small');s.textContent=new Date(m.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});d.append(s);
+ if(m.src&&m.src.length){const u=document.createElement('div');u.append('Sources: ');m.src.forEach((x,i)=>{const a=document.createElement('a');a.href=x.url;a.target='_blank';a.rel='noopener';a.textContent=`[${i+1}] ${x.title}`;u.append(a,' ')});d.append(u)}
+ if(m.role=='ai'){const c=document.createElement('button');c.textContent='Copy';c.onclick=()=>navigator.clipboard.writeText(m.text).then(()=>toast('Copied'),()=>toast('Copy blocked by browser'));d.append(c)}
+ if(m.role=='err'&&m.retry){const c=document.createElement('button');c.textContent='Retry';c.onclick=()=>{d.remove();ask(m.retry,true)};d.append(c)}
+ $('#msgs').append(d);$('#msgs').scrollTop=1e9}
+function persist(){if(S.ph)localStorage.jv_h=JSON.stringify(msgs.slice(-200))}
+if(S.ph&&localStorage.jv_h){msgs=JSON.parse(localStorage.jv_h);msgs.forEach(draw)}
+async function llm(system,messages,signal){let r;const body=JSON.stringify({model:S.model,system,messages,max_tokens:S.len=='detailed'?1500:600});
+ try{if(S.backend)r=await fetch(S.backend+'/api/chat',{method:'POST',signal,headers:{'content-type':'application/json'},body});
+ else{if(!S.key)throw Error('No API key. Add one in Settings, or set a backend URL.');
+  const pv=S.pv||(S.key.startsWith('sk-or-')?'openrouter':'anthropic');if(pv!='anthropic'){const m=pv=='openrouter'&&!S.model.includes('/')?'openrouter/auto':S.model;
+   r=await fetch((pv=='openrouter'?'https://openrouter.ai/api/v1':S.cu.replace(/\/$/,''))+'/chat/completions',{method:'POST',signal,headers:{'content-type':'application/json','authorization':'Bearer '+S.key,'X-Title':'JARVIS'},body:JSON.stringify({model:m,max_tokens:S.len=='detailed'?1500:600,messages:[{role:'system',content:system},...messages]})})}
+  else r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal,body,headers:{'content-type':'application/json','x-api-key':S.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}})}}
+ catch(e){if(e.name=='AbortError')throw e;throw Error(e.message.startsWith('No API')?e.message:'Network failure: could not reach the AI service.')}
+ if(!r.ok){const e=(await r.text()).slice(0,160);throw Error(r.status==401?'Invalid API key.':r.status==404?'Model not found: '+S.model:r.status==429?'Rate limited. Wait a moment and retry.':`Provider error ${r.status}: ${e}`)}
+ const j=await r.json(),t=(j.choices?(j.choices[0]?.message?.content||''):(j.content||[]).map(c=>c.text||'').join('')).trim();if(!t)throw Error('The model returned an empty response.');return t}
+async function search(q){const r=await fetch(S.backend+'/api/search',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({q})});if(!r.ok)throw Error('search '+r.status);return (await r.json()).results||[]}
+async function ask(text,retry){text=text.trim();if(busy||!text)return;busy=true;if(!retry)add('user',text);
+ if(command(text)){busy=false;return}
+ setState('thinking');ctl=new AbortController();let ctx='',src=[];
+ const need=$('#live').checked||/\b(news|today|tonight|latest|current|currently|weather|score|scores|price|stock|recent|breaking|now)\b/i.test(text);
+ if(need){try{src=await search(text);if(!src.length)throw 0;ctx='\n\nLIVE WEB RESULTS (retrieved just now). Ground your answer in these, cite as [n], and say what is uncertain:\n'+src.map((x,i)=>`[${i+1}] ${x.title} — ${x.content}`).join('\n')}
+  catch{ctx='\n\nA live web search was needed but FAILED. Do not present anything as live or verified; tell the user current information could not be verified.'}}
+ const hist=msgs.filter(m=>m.role=='user'||m.role=='ai').slice(-16).map(m=>({role:m.role=='ai'?'assistant':'user',content:m.text}));
+ const len={concise:' Keep replies under three sentences unless asked.',balanced:' Reply in a short paragraph.',detailed:' Give thorough explanations.'}[S.len];
+ try{const out=await llm(S.sys+len+ctx,hist,ctl.signal);add('ai',out,{src:src.map(x=>({title:x.title,url:x.url}))});
+  if(S.speak)speak(out);else setState('idle')}
+ catch(e){setState('idle');if(e.name!='AbortError')add('err',e.message,{retry:text})}
+ busy=false}
+$('#send').onclick=()=>{const v=$('#in').value;$('#in').value='';ask(v)};$('#in').onkeydown=e=>{if(e.key=='Enter')$('#send').click()};
+$('#newc').onclick=()=>{msgs=[];$('#msgs').innerHTML='';persist();speechSynthesis.cancel();setState('idle')};
+$('#stop').onclick=()=>{speechSynthesis.cancel();ctl&&ctl.abort();rec&&rec.abort();setState('idle')};
+// ---------- commands (only real, supported actions) ----------
+function command(t){let m;const reply=x=>{add('ai',x);S.speak&&speak(x);return true};
+ if(m=t.match(/timer for (\d+)\s*(second|minute|hour)/i)){const ms=m[1]*{second:1e3,minute:6e4,hour:36e5}[m[2].toLowerCase()];
+  setTimeout(()=>{add('ai',`Timer finished (${m[1]} ${m[2]}).`);speak('Your timer has finished.')},ms);return reply(`Timer set for ${m[1]} ${m[2]}(s). It only fires while this page stays open.`)}
+ if(m=t.match(/^open (https?:\/\/\S+|[\w-]+\.[a-z]{2,}\S*)/i)){const u=/^http/.test(m[1])?m[1]:'https://'+m[1];const w=window.open(u,'_blank');return reply(w?`Opened ${u}.`:'The browser blocked the pop-up. Allow pop-ups for this page and try again.')}
+ if(m=t.match(/(?:show|focus|go to)\s+(.+)/i)){const p=PLACES.find(x=>m[1].toLowerCase().includes(x.n.toLowerCase()));if(p){focus(p);return reply(`Focused the globe on ${p.n}.`)}}
+ return false}
+// ---------- voice ----------
+let unl=false;document.addEventListener('pointerdown',()=>{if(unl||!window.speechSynthesis)return;unl=true;const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)},{once:true});
+async function micPerm(){try{const st=await navigator.mediaDevices.getUserMedia({audio:true});st.getTracks().forEach(t=>t.stop());return true}catch(e){toast('Microphone blocked. In Safari tap aA → Website Settings → Microphone → Allow, then reload.');return false}}
+
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null;
+$('#tv').onclick=()=>speak('Voice output is working.');$('#tm').onclick=async()=>{if(await micPerm())toast('Microphone allowed. Tap the mic button to talk.')};
+$('#mic').onclick=async()=>{if(!SR)return toast('Speech recognition is not supported in this browser. Use the typed chat or the keyboard dictation (🎙) key.');
+ if(rec){rec.stop();return}if(!rec&&!(await micPerm()))return;speechSynthesis.cancel();rec=new SR();rec.lang='en-US';rec.interimResults=false;let done=false;
+ rec.onresult=e=>{if(done)return;done=true;ask(e.results[0][0].transcript)};
+ rec.onerror=e=>{toast(e.error=='not-allowed'||e.error=='service-not-allowed'?'Speech blocked. Allow Microphone for this site (aA → Website Settings), and turn on Settings → Siri → Dictation on the iPad.':e.error=='no-speech'?'I did not hear anything. Tap the mic and try again.':'Microphone error: '+e.error)};
+ rec.onend=()=>{rec=null;if(state=='listening')setState('idle')};
+ try{rec.start();setState('listening')}catch(e){rec=null;toast('Could not start listening: '+e.message)}};
+function speak(t){if(!window.speechSynthesis){setState('idle');return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[*_`#\[\]]/g,''));
+ const v=speechSynthesis.getVoices().find(v=>v.name==S.voice);if(v)u.voice=v;u.rate=S.rate;u.onstart=()=>setState('speaking');u.onend=u.onerror=()=>setState('idle');speechSynthesis.speak(u)}
+function voices(){$('#vo').innerHTML='';speechSynthesis.getVoices().forEach(v=>{const o=new Option(`${v.name} (${v.lang})`,v.name);o.selected=v.name==S.voice;$('#vo').add(o)})}
+if(window.speechSynthesis){voices();speechSynthesis.onvoiceschanged=voices}
+// ---------- globe ----------
+const PLACES=[{n:'London',a:51.5,o:-0.13,c:'United Kingdom'},{n:'New York',a:40.7,o:-74,c:'United States'},{n:'Tokyo',a:35.7,o:139.7,c:'Japan'},{n:'Delhi',a:28.6,o:77.2,c:'India'},{n:'Sydney',a:-33.9,o:151.2,c:'Australia'},{n:'Cairo',a:30,o:31.2,c:'Egypt'},{n:'São Paulo',a:-23.5,o:-46.6,c:'Brazil'},{n:'Cape Town',a:-33.9,o:18.4,c:'South Africa'}];
+const ll=(a,o,r=1)=>{const p=(90-a)*Math.PI/180,t=(o+180)*Math.PI/180;return new THREE.Vector3(-r*Math.sin(p)*Math.cos(t),r*Math.cos(p),r*Math.sin(p)*Math.sin(t))};
+let R,Sc,Cam,G,tgt={ry:0,rx:.3,z:3.6},paused=false,drag=false,rings=[],marks=[],sel=null;
+function initGlobe(){try{if(!window.THREE)throw 0;R=new THREE.WebGLRenderer({canvas:$('#gl'),antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+ Sc=new THREE.Scene();Cam=new THREE.PerspectiveCamera(45,1,.1,100);Cam.position.z=3.6;G=new THREE.Group();Sc.add(G);
+ const add_=(g,m)=>{const x=new THREE.Mesh(g,m);G.add(x);return x};
+ add_(new THREE.SphereGeometry(1,64,64),new THREE.MeshBasicMaterial({color:0x061a3a,transparent:true,opacity:.9}));
+ const tex=add_(new THREE.SphereGeometry(1.003,64,64),new THREE.MeshBasicMaterial({color:0x3de0ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending}));
+ new THREE.TextureLoader().setCrossOrigin('anonymous').load('https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-water.png',t=>{tex.material.alphaMap=t;tex.material.map=t;tex.material.opacity=.55;tex.material.needsUpdate=true},undefined,()=>{});
+ const lm=new THREE.LineBasicMaterial({color:0x4d7cff,transparent:true,opacity:.45});
+ for(let a=-60;a<=60;a+=30){const p=[];for(let o=0;o<=360;o+=6)p.push(ll(a,o,1.006));G.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(p),lm))}
+ for(let o=0;o<360;o+=30){const p=[];for(let a=-90;a<=90;a+=6)p.push(ll(a,o,1.006));G.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(p),lm))}
+ add_(new THREE.SphereGeometry(1.14,48,48),new THREE.MeshBasicMaterial({color:0x3de0ff,transparent:true,opacity:.07,side:THREE.BackSide,blending:THREE.AdditiveBlending}));
+ [[1.35,0x9b6bff,.5],[1.55,0x3de0ff,.35]].forEach(([r,c,o],i)=>{const p=[];for(let k=0;k<=128;k++)p.push(new THREE.Vector3(Math.cos(k/128*6.283)*r,0,Math.sin(k/128*6.283)*r));
+  const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(p),new THREE.LineBasicMaterial({color:c,transparent:true,opacity:o}));l.rotation.x=.5+i*.6;Sc.add(l);rings.push(l)});
+ const sp=[];for(let i=0;i<500;i++)sp.push(new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize().multiplyScalar(30+Math.random()*20));
+ Sc.add(new THREE.Points(new THREE.BufferGeometry().setFromPoints(sp),new THREE.PointsMaterial({color:0xaac8ff,size:.12})));
+ PLACES.forEach(p=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.025,12,12),new THREE.MeshBasicMaterial({color:0xff6bd0}));m.position.copy(ll(p.a,p.o,1.02));m.userData=p;G.add(m);marks.push(m)});
+ bindGlobe();resize();addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,300));frame()}catch(e){$('#glfb').hidden=false}}
+function resize(){if(!R)return;const b=$('#glbox');if(!b.clientWidth)return;R.setSize(b.clientWidth,b.clientHeight,false);Cam.aspect=b.clientWidth/b.clientHeight;Cam.updateProjectionMatrix()}
+function frame(){requestAnimationFrame(frame);if(!paused&&!drag)tgt.ry+=.003;
+ G.rotation.y+=(tgt.ry-G.rotation.y)*.15;G.rotation.x+=(tgt.rx-G.rotation.x)*.15;Cam.position.z+=(tgt.z-Cam.position.z)*.15;
+ const sp=state=='thinking'?.03:state=='speaking'?.012:.003,pul=state=='listening'?1+Math.sin(Date.now()/250)*.03:state=='speaking'?1+Math.sin(Date.now()/90)*.02:1;
+ rings.forEach((r,i)=>{r.rotation.y+=sp*(i?-1:1);r.scale.setScalar(pul)});R.render(Sc,Cam)}
+const clampZ=z=>Math.max(1.8,Math.min(6,z));
+function focus(p){const v=ll(p.a,p.o);tgt.ry=-Math.atan2(v.x,v.z);tgt.rx=p.a*Math.PI/180;paused=true;$('#gp').textContent='Resume rotation';sel=p;$('#info').textContent=`${p.n}, ${p.c} — lat ${p.a}°, lon ${p.o}°`;go(document.body.dataset.view)}
+function bindGlobe(){const c=$('#gl'),P=new Map();let pd=0,moved=0;
+ c.onpointerdown=e=>{c.setPointerCapture(e.pointerId);P.set(e.pointerId,e);drag=true;moved=0;pd=0};
+ c.onpointermove=e=>{if(!P.has(e.pointerId))return;const o=P.get(e.pointerId);P.set(e.pointerId,e);moved+=Math.abs(e.movementX||0)+Math.abs(e.movementY||0);
+  if(P.size==1){tgt.ry+=(e.clientX-o.clientX)*.006;tgt.rx=Math.max(-1.3,Math.min(1.3,tgt.rx+(e.clientY-o.clientY)*.006))}
+  else if(P.size==2){const[a,b]=[...P.values()],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);if(pd)tgt.z=clampZ(tgt.z*pd/d);pd=d}};
+ c.onpointerup=c.onpointercancel=e=>{if(P.size==1&&moved<6){const r=c.getBoundingClientRect(),v=new THREE.Vector2((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1),rc=new THREE.Raycaster();rc.setFromCamera(v,Cam);rc.params.Points={threshold:.1};
+   const h=rc.intersectObjects(marks.map(m=>(m.scale.setScalar(2.5),m)))[0];marks.forEach(m=>m.scale.setScalar(1));if(h)focus(h.object.userData)}
+  P.delete(e.pointerId);if(!P.size)drag=false;pd=0};
+ c.onwheel=e=>{e.preventDefault();tgt.z=clampZ(tgt.z*(1+e.deltaY*.001))}}
+const togglePause=()=>{paused=!paused;$('#gp').textContent=paused?'Resume rotation':'Pause rotation'};
+const resetView=()=>{tgt.z=3.6};const resetOri=()=>{tgt.ry=0;tgt.rx=.3;sel=null;$('#info').textContent='Tap a marker to select a location.'};
+$('#gp').onclick=togglePause;$('#gv').onclick=resetView;$('#go').onclick=resetOri;$('#gz1').onclick=()=>tgt.z=clampZ(tgt.z-.5);$('#gz2').onclick=()=>tgt.z=clampZ(tgt.z+.5);
+// ---------- hand tracking (MediaPipe Hand Landmarker) ----------
+const MP='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14',MODEL='https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+let HL=null,stream=null,run=false,cand='',cnt=0,cur='none',cool={},prev=null,sm=null,spd=null,lastT=-1;
+const gs=t=>$('#gs').textContent=t,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+$('#cb').onclick=async()=>{if(run)return;
+ if(!isSecureContext||!navigator.mediaDevices)return gs('Camera needs HTTPS or localhost. Open this app from an https:// address (e.g. GitHub Pages or your backend).');
+ try{gs('Requesting camera…');stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480},audio:false});const v=$('#v');v.srcObject=stream;await v.play();
+  if(!HL){gs('Loading hand model (about 8 MB)…');const{FilesetResolver,HandLandmarker}=await import(MP+'/vision_bundle.mjs');const fs=await FilesetResolver.forVisionTasks(MP+'/wasm');
+   try{HL=await HandLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:MODEL,delegate:'GPU'},runningMode:'VIDEO',numHands:1})}
+   catch{HL=await HandLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:MODEL},runningMode:'VIDEO',numHands:1})}}
+  run=true;recal();gs('Tracking. Show one hand to the camera.');loop()}
+ catch(e){stopCam();gs(e.name=='NotAllowedError'?'Camera permission denied. In Safari: aA menu → Website Settings → Camera → Allow, then reload.':e.name=='NotFoundError'?'No camera found.':'Hand tracking failed to load: '+e.message+'. Check your connection (model files load from jsDelivr/Google) and try again.')}};
+function stopCam(){run=false;stream&&stream.getTracks().forEach(t=>t.stop());stream=null;$('#v').srcObject=null;const o=$('#ov');o.getContext('2d').clearRect(0,0,o.width,o.height)}
+$('#cx').onclick=()=>{stopCam();gs('Camera off.')};
+const recal=()=>{cand='';cnt=0;cur='none';prev=null;sm=null;spd=null};$('#cc').onclick=()=>{recal();toast('Gestures recalibrated. Hold your hand steady.')};
+$('#sens').oninput=e=>S.sens=+e.target.value;
+function loop(){if(!run)return;requestAnimationFrame(loop);const v=$('#v');if(v.readyState<2||v.currentTime===lastT)return;lastT=v.currentTime;
+ const r=HL.detectForVideo(v,performance.now()),o=$('#ov'),x=o.getContext('2d');o.width=v.videoWidth;o.height=v.videoHeight;
+ if(!r.landmarks.length){cand='';cnt=0;cur='none';prev=null;gs('No hand detected.');return}
+ const lm=r.landmarks[0];x.fillStyle='#3de0ff';lm.forEach(p=>{x.beginPath();x.arc(p.x*o.width,p.y*o.height,3,0,7);x.fill()});
+ const hs=dist(lm[0],lm[9]),k=1.25-.15*S.sens,ext=(t,p)=>dist(lm[t],lm[0])>dist(lm[p],lm[0])*k;
+ const I=ext(8,6),M=ext(12,10),Rg=ext(16,14),P=ext(20,18),th=dist(lm[4],lm[5])>.55*hs,pd=dist(lm[4],lm[8])/hs;let g='none';
+ if(I&&M&&Rg&&P)g='open';else if(I&&M&&!Rg&&!P)g='two';else if(I&&!M&&!Rg&&!P)g=th?'pinch':'point';else if(!I&&!M&&!Rg&&!P)g=pd<.22?'pinch':'fist';
+ spd=spd==null?pd:spd+(pd-spd)*.3;const tip={x:1-lm[8].x,y:lm[8].y};sm=sm?{x:sm.x+(tip.x-sm.x)*.35,y:sm.y+(tip.y-sm.y)*.35}:tip;
+ if(g==cand)cnt++;else{cand=g;cnt=1}
+ if(cnt>=5&&cand!=cur){cur=cand;prev=null;const now=Date.now(),ok=(n,ms)=>!(cool[n]>now)&&(cool[n]=now+ms,true);
+  if(cur=='open'&&ok('o',1200))togglePause();if(cur=='fist'&&ok('f',1200)){resetView();resetOri()}
+  if(cur=='two'&&ok('t',1500)){const L=['home','globe','gesture'];go(L[(L.indexOf(document.body.dataset.view)+1)%3])}}
+ if(cur=='point'){if(prev){tgt.ry+=(sm.x-prev.x)*6*S.sens;tgt.rx=Math.max(-1.3,Math.min(1.3,tgt.rx+(sm.y-prev.y)*6*S.sens))}prev={...sm}}
+ else if(cur=='pinch')tgt.z=clampZ(6-Math.max(0,Math.min(1,(spd-.15)/1.05))*4.2);
+ const c=r.handedness[0]&&r.handedness[0][0];gs(`Gesture: ${cur=='none'?'steady…':cur}${c?` · confidence ${(c.score*100|0)}%`:''}`)}
+// ---------- settings / history / diagnostics ----------
+function load(){$('#key').value=S.key;$('#pv').value=S.pv;$('#cu').value=S.cu;$('#be').value=S.backend;$('#model').value=S.model;$('#len').value=S.len;$('#sys').value=S.sys;$('#rate').value=S.rate;$('#sp').checked=S.speak;$('#ph').checked=S.ph;$('#pk').checked=S.pk;$('#sens').value=S.sens}
+$('#ss').onclick=()=>{Object.assign(S,{pv:$('#pv').value,cu:$('#cu').value.trim(),key:$('#key').value.trim(),backend:$('#be').value.trim().replace(/\/$/,''),model:$('#model').value.trim(),len:$('#len').value,sys:$('#sys').value||DEF,voice:$('#vo').value,rate:+$('#rate').value,speak:$('#sp').checked,ph:$('#ph').checked,pk:$('#pk').checked});
+ const{key,...rest}=S;localStorage.jv_s=JSON.stringify(S.pk?S:rest);S.ph?persist():localStorage.removeItem('jv_h');toast('Settings saved')};
+$('#clr').onclick=()=>{localStorage.removeItem('jv_s');localStorage.removeItem('jv_h');msgs=[];$('#msgs').innerHTML='';renderHist();toast('All stored data cleared')};
+function renderHist(){const h=$('#hl');h.innerHTML='';msgs.filter(m=>m.role=='user').slice().reverse().forEach(m=>{const b=document.createElement('button');b.style.cssText='display:block;width:100%;text-align:left;margin:4px 0';b.textContent=`${new Date(m.t).toLocaleString()} — ${m.text}`;b.onclick=()=>{go('chat');ask(m.text)};h.append(b)});if(!msgs.length)h.textContent='No messages yet.'}
+async function diag(){let be='not set';if(S.backend)try{be=(await fetch(S.backend+'/api/health')).ok?'connected':'error'}catch{be='unreachable'}
+ $('#diag').textContent=`Secure context (HTTPS): ${isSecureContext}\nWebGL 3D: ${!!R}\nSpeech recognition: ${!!SR}\nSpeech synthesis: ${!!window.speechSynthesis}\nCamera API: ${!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)}\nHand tracker loaded: ${!!HL}\nAI mode: ${S.backend?'backend':S.key?'direct (key in browser)':'not configured'}\nBackend: ${be}`}
+load();initGlobe();add_welcome();function add_welcome(){if(!msgs.length)add('ai',S.key||S.backend?'JARVIS online. How can I help?':'JARVIS online. Open Settings to add an API key or backend URL to enable AI replies.')}
+</script></body></html>
